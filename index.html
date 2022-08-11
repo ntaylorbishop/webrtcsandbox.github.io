@@ -1,0 +1,119 @@
+<html>
+  <title>Test User Media on Citrix</title>
+
+  <head>
+    <script type="text/javascript">
+      function logThis(message, isError = false) {
+        // if we pass an Error object, message.stack will have all the details, otherwise give us a string
+
+        if (typeof message === "object" && !isError) {
+          message = JSON.stringify(message);
+        }
+
+        // create the message line with current time
+        var today = new Date();
+        var date =
+          today.getFullYear() +
+          "-" +
+          (today.getMonth() + 1) +
+          "-" +
+          today.getDate();
+        var time =
+          today.getHours() +
+          ":" +
+          today.getMinutes() +
+          ":" +
+          today.getSeconds();
+        var dateTime = date + " " + time + " ";
+
+        console.log(message);
+
+        //insert line
+        document
+          .getElementById("logger")
+          .insertAdjacentHTML("beforeend", dateTime + message + "<br>");
+      }
+
+      async function getUserMediaAttachFeedAndEnumerateDevices() {
+        const constraints = {
+          audio: true,
+          video: true,
+        };
+
+        let stream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (error) {
+          logThis("ERROR IN GETUSERMEDIA");
+          logThis(error, true);
+          return;
+        }
+        const video = document.getElementById("videoFeed");
+        const videoTracks = stream.getVideoTracks();
+        const audioTracks = stream.getAudioTracks();
+
+        logThis("Got stream with constraints:", constraints);
+        logThis(`Using video device: ${videoTracks[0].label}`);
+        window.stream = stream;
+        video.srcObject = stream;
+
+        logThis("VIDEO TRACKS");
+        videoTracks.forEach((videoTrack) => {
+          logThis("&nbsp&nbsplabel: " + videoTrack.label);
+          logThis("&nbsp&nbspcontentHint: " + videoTrack.contentHint);
+          logThis("&nbsp&nbspenabled: " + videoTrack.enabled);
+          logThis("&nbsp&nbspid: " + videoTrack.id);
+          logThis("&nbsp&nbspkind: " + videoTrack.kind);
+          logThis("&nbsp&nbspmuted: " + videoTrack.muted);
+          logThis("&nbsp&nbspreadyState: " + videoTrack.readyState);
+        });
+
+        logThis("AUDIO TRACKS");
+        audioTracks.forEach((audioTrack) => {
+          logThis("&nbsp&nbsplabel: " + audioTrack.label);
+          logThis("&nbsp&nbspcontentHint: " + audioTrack.contentHint);
+          logThis("&nbsp&nbspenabled: " + audioTrack.enabled);
+          logThis("&nbsp&nbspid: " + audioTrack.id);
+          logThis("&nbsp&nbspkind: " + audioTrack.kind);
+          logThis("&nbsp&nbspmuted: " + audioTrack.muted);
+          logThis("&nbsp&nbspreadyState: " + audioTrack.readyState);
+        });
+
+        try {
+          let devices = await navigator.mediaDevices.enumerateDevices();
+          logThis(devices);
+        } catch (error) {
+          logThis(error, true);
+        }
+      }
+
+      window.onload = function () {
+        getUserMediaAttachFeedAndEnumerateDevices();
+      };
+    </script>
+    <style type="text/css" rel="stylesheet">
+      #divElement {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+      }
+      #logger {
+        overflow: scroll;
+        width: 800px;
+        height: 400px;
+        height: 250px;
+        background-color: "red";
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="divElement">
+      <video id="videoFeed" autoplay playsinline></video>
+      <p style="color: red">COPY EVERYTHING BELOW THIS LINE:</p>
+      <div id="logger" class="log"></div>
+    </div>
+  </body>
+</html>
